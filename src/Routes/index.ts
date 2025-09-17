@@ -1,9 +1,13 @@
 import { Router } from "express";
-import  authRoutes  from "./authRoutes";
+
+import apiaryRoutes from "./apiaryRoutes";
+import hiveRoutes from "./hiveRoutes";
 
 const router = Router();
 
-router.use("/auth", authRoutes);
+
+router.use("/apiaries", apiaryRoutes);
+router.use("/hives", hiveRoutes);
 
 
 export default router;

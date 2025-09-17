@@ -13,16 +13,122 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
+/*model User {
   id        Int      @id @default(autoincrement())
   email     String   @unique
   password  String
-  role      Role     @default(CUSTOMER) 
+  role      Role     @default(APIARY) 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 enum Role {
   ADMIN
-  CUSTOMER
+  APIARY
+}*/
+
+model Apiary {
+  id           Int       @id @default(autoincrement())
+  name         String
+  forages      String?
+  type         String?
+  sun_exposure String?
+  description  String?
+  address      String?
+  zip          String?
+  city         String?
+  state        String?
+  country      String?
+  latitude     Float?
+  longitude    Float?
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+  // Relations
+  hives        Hive[]
+
+  @@map("apiary")
+}
+
+model Hive {
+  id              Int               @id @default(autoincrement())
+  apiary_id       Int
+  status          String?
+  hive_identifier String?
+  color           String?
+  type            HiveType?
+  source          String?
+  purpose         HivePurpose?
+  created_date    DateTime?
+  note            String?
+  createdAt       DateTime          @default(now()) @map("created_at")
+  updatedAt       DateTime          @updatedAt @map("updated_at")
+
+  // Relations
+  apiary          Apiary            @relation(fields: [apiary_id], references: [id], onDelete: Cascade)
+  hiveColonyInfo  HiveColonyInfo?
+  hiveQueen       HiveQueen?
+
+  @@map("hives")
+}
+
+model HiveColonyInfo {
+  id               Int       @id @default(autoincrement())
+  hive_id          Int       @unique
+  strength         Int?
+  strength_category String?
+  temperament      String?
+  supers_count     Int?      @default(0)
+  frames_count     Int?      @default(10)
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  hive             Hive      @relation(fields: [hive_id], references: [id], onDelete: Cascade)
+
+  @@map("hive_colony_info")
+}
+
+model HiveQueen {
+  id                  Int       @id @default(autoincrement())
+  hive_id             Int       @unique
+  has_queen           Boolean?  @default(false)
+  queen_status        String?
+  queen_id            String?
+  queen_hatched_year  Int?
+  queen_installed_date DateTime?
+  queen_state         String?
+  queen_race          String?
+  queen_clipped       Boolean?  @default(false)
+  queen_marked        Boolean?  @default(false)
+  queen_note          String?
+  queen_origin        String?
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  hive                Hive      @relation(fields: [hive_id], references: [id], onDelete: Cascade)
+
+  @@map("hive_queen")
+}
+
+// Enums for type and purpose
+enum HiveType {
+  LANGSTROTH
+  TOP_BAR
+  WARRE
+  FLOW
+  NATIONAL
+  COMMERCIAL
+  OTHER
+}
+
+enum HivePurpose {
+  HONEY_PRODUCTION
+  POLLINATION
+  QUEEN_BREEDING
+  NUC_PRODUCTION
+  RESEARCH
+  EDUCATION
+  CONSERVATION
+  OTHER
 }
