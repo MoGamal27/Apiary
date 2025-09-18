@@ -45,6 +45,11 @@ model Apiary {
   updatedAt    DateTime  @updatedAt @map("updated_at")
   // Relations
   hives        Hive[]
+  inspections  Inspection[]
+  tasks        Task[]
+  feedings     Feeding[]
+  harvests     Harvest[]
+  treatments   Treatment[]
 
   @@map("apiary")
 }
@@ -67,6 +72,11 @@ model Hive {
   apiary          Apiary            @relation(fields: [apiary_id], references: [id], onDelete: Cascade)
   hiveColonyInfo  HiveColonyInfo?
   hiveQueen       HiveQueen?
+  inspections     Inspection[]
+  tasks           Task[]
+  feedings        Feeding[]
+  harvests        Harvest[]
+  treatments      Treatment[]
 
   @@map("hives")
 }
@@ -131,4 +141,354 @@ enum HivePurpose {
   EDUCATION
   CONSERVATION
   OTHER
+}
+
+
+model Inspection {
+  id               Int                    @id @default(autoincrement())
+  name             String?
+  apiary_id        Int
+  hive_id          Int
+  inspection_date  DateTime
+  inspection_time  String?
+  strength         Int?
+  strength_category StrengthCategory?
+  temperament      Temperament?
+  supers_count     Int?
+  frames_count     Int?
+  notes            String?
+  weight           Float?
+  weight_unit      String?
+  include_weather  Boolean?              @default(false)
+  weather_conditions String?
+  temperature      Float?
+  createdAt        DateTime              @default(now()) @map("created_at")
+  updatedAt        DateTime              @updatedAt @map("updated_at")
+
+  // Relations
+  apiary           Apiary                @relation(fields: [apiary_id], references: [id], onDelete: Cascade)
+  hive             Hive                  @relation(fields: [hive_id], references: [id], onDelete: Cascade)
+  inspectionQueen  InspectionQueen?
+  inspectionBrood  InspectionBrood?
+  inspectionConditions InspectionConditions?
+  inspectionFrames InspectionFrames?
+  inspectionActivities InspectionActivities?
+  inspectionProblems InspectionProblems?
+  inspectionTreatments InspectionTreatments?
+
+  @@map("inspections")
+}
+
+model InspectionQueen {
+  id             Int       @id @default(autoincrement())
+  inspection_id  Int       @unique
+  queen_seen     Boolean?  @default(false)
+  queen_cells    QueenCells?
+  swarmed        Boolean?  @default(false)
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  inspection     Inspection @relation(fields: [inspection_id], references: [id], onDelete: Cascade)
+
+  @@map("inspection_queen")
+}
+
+model InspectionBrood {
+  id                Int       @id @default(autoincrement())
+  inspection_id     Int       @unique
+  eggs_present      Boolean?  @default(false)
+  capped_brood      Boolean?  @default(false)
+  uncapped_brood    Boolean?  @default(false)
+  excessive_drones  Boolean?  @default(false)
+  laying_pattern    LayingPattern?
+  population_level  PopulationLevel?
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  inspection        Inspection @relation(fields: [inspection_id], references: [id], onDelete: Cascade)
+
+  @@map("inspection_brood")
+}
+
+model InspectionConditions {
+  id                  Int       @id @default(autoincrement())
+  inspection_id       Int       @unique
+  equipment_condition EquipmentCondition?
+  odor                Odor?
+  brace_comb          Boolean?  @default(false)
+  excessive_propolis  Boolean?  @default(false)
+  dead_bees           Boolean?  @default(false)
+  moisture            Boolean?  @default(false)
+  mold                Boolean?  @default(false)
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  inspection          Inspection @relation(fields: [inspection_id], references: [id], onDelete: Cascade)
+
+  @@map("inspection_conditions")
+}
+
+model InspectionFrames {
+  id                   Int       @id @default(autoincrement())
+  inspection_id        Int       @unique
+  frames_bees          Int?
+  frames_brood         Int?
+  frames_honey         Int?
+  frames_pollen        Int?
+  frames_foundation    Int?
+  honey_stores         HoneyStores?
+  pollen_stores        PollenStores?
+  createdAt            DateTime  @default(now()) @map("created_at")
+  updatedAt            DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  inspection           Inspection @relation(fields: [inspection_id], references: [id], onDelete: Cascade)
+
+  @@map("inspection_frames")
+}
+
+model InspectionActivities {
+  id                  Int       @id @default(autoincrement())
+  inspection_id       Int       @unique
+  bee_activity        ActivityLevel?
+  orientation_flights ActivityLevel?
+  pollen_arriving     ActivityLevel?
+  foraging_bees       ActivityLevel?
+  bees_per_minute     Int?
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  inspection          Inspection @relation(fields: [inspection_id], references: [id], onDelete: Cascade)
+
+  @@map("inspection_activities")
+}
+
+model InspectionProblems {
+  id             Int       @id @default(autoincrement())
+  inspection_id  Int       @unique
+  diseases       String?
+  pests          String?
+  predation      String?
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  inspection     Inspection @relation(fields: [inspection_id], references: [id], onDelete: Cascade)
+
+  @@map("inspection_problems")
+}
+
+model InspectionTreatments {
+  id                 Int       @id @default(autoincrement())
+  inspection_id      Int       @unique
+  treatments         String?
+  varroa_drop_count  Int?
+  actions_taken      String?
+  createdAt          DateTime  @default(now()) @map("created_at")
+  updatedAt          DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  inspection         Inspection @relation(fields: [inspection_id], references: [id], onDelete: Cascade)
+
+  @@map("inspection_treatments")
+}
+
+// Enums
+enum StrengthCategory {
+  VERY_WEAK
+  WEAK
+  MODERATE
+  STRONG
+  VERY_STRONG
+}
+
+enum Temperament {
+  CALM
+  NORMAL
+  NERVOUS
+  AGGRESSIVE
+  DEFENSIVE
+}
+
+enum QueenCells {
+  NONE
+  SWARM
+  SUPERSEDURE
+  EMERGENCY
+}
+
+enum LayingPattern {
+  NONE
+  NOT_UNIFORM
+  MOSTLY_UNIFORM
+  UNIFORM
+}
+
+enum PopulationLevel {
+  LOW
+  AVERAGE
+  HIGH
+}
+
+enum EquipmentCondition {
+  DAMAGED
+  FAIR
+  GOOD
+}
+
+enum Odor {
+  NORMAL
+  FOUL
+  SOUR
+}
+
+enum HoneyStores {
+  LOW
+  AVERAGE
+  HIGH
+  ABUNDANT
+}
+
+enum PollenStores {
+  LOW
+  AVERAGE
+  HIGH
+  ABUNDANT
+}
+
+enum ActivityLevel {
+  LOW
+  AVERAGE
+  HIGH
+}
+
+model Task {
+  id           Int          @id @default(autoincrement())
+  status       TaskStatus   @default(PENDING)
+  type         String?
+  apiary_id    Int
+  hive_id      Int?
+  priority     TaskPriority @default(NORMAL)
+  title        String
+  start_date   DateTime
+  start_time   String?
+  end_date     DateTime?
+  end_time     String?
+  description  String?
+  reminder     Boolean      @default(false)
+  reminder_me  String?
+  createdAt    DateTime     @default(now()) @map("created_at")
+  updatedAt    DateTime     @updatedAt @map("updated_at")
+
+  // Relations
+  apiary       Apiary       @relation(fields: [apiary_id], references: [id], onDelete: Cascade)
+  hive         Hive?        @relation(fields: [hive_id], references: [id], onDelete: Cascade)
+
+  @@map("tasks")
+}
+
+// Enums
+enum TaskStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  OVERDUE
+}
+
+enum TaskPriority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+}
+
+
+model Feeding {
+  id                 Int       @id @default(autoincrement())
+  apiary_id          Int
+  apply_to_all_hives Boolean   @default(false)
+  hive_id            Int?
+  name               String?
+  feeding_date       DateTime
+  feeding_type       String?
+  food_type          String?
+  ratio              String?   @default("None")
+  note               String?
+  input_as           String?   @default("Total")
+  quantity           Decimal?
+  unit               String?   @default("kg")
+  notes              String?
+  createdAt          DateTime  @default(now()) @map("created_at")
+  updatedAt          DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  apiary             Apiary    @relation(fields: [apiary_id], references: [id], onDelete: Cascade)
+  hive               Hive?     @relation(fields: [hive_id], references: [id], onDelete: Cascade)
+
+  @@map("feedings")
+}
+
+model Harvest {
+  id                 Int          @id @default(autoincrement())
+  scope              String?      @default("Apiary")
+  apiary_id          Int
+  apply_to_all_hives Boolean      @default(false)
+  hive_id            Int?
+  name               String?
+  harvest_date       DateTime
+  product_type       ProductType  @default(HONEY)
+  variety            String?
+  total_quantity     Decimal?
+  unit               String?      @default("kg")
+  notes              String?
+  createdAt          DateTime     @default(now()) @map("created_at")
+  updatedAt          DateTime     @updatedAt @map("updated_at")
+
+  // Relations
+  apiary             Apiary       @relation(fields: [apiary_id], references: [id], onDelete: Cascade)
+  hive               Hive?        @relation(fields: [hive_id], references: [id], onDelete: Cascade)
+
+  @@map("harvests")
+}
+
+// Enums
+enum ProductType {
+  HONEY
+  WAX
+  PROPOLIS
+  POLLEN
+  ROYAL_JELLY
+  BEE_BREAD
+  COMB_HONEY
+  OTHER
+}
+
+model Treatment {
+  id                 Int       @id @default(autoincrement())
+  scope              String?   @default("Apiary")
+  apiary_id          Int
+  apply_to_all_hives Boolean   @default(false)
+  hive_id            Int?
+  name               String?
+  disease            String?
+  treatment_product  String?
+  start_date         DateTime
+  end_date           DateTime?
+  input_as           String?   @default("Total")
+  total_quantity     Decimal?
+  doses              String?
+  notes              String?
+  createdAt          DateTime  @default(now()) @map("created_at")
+  updatedAt          DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  apiary             Apiary    @relation(fields: [apiary_id], references: [id], onDelete: Cascade)
+  hive               Hive?     @relation(fields: [hive_id], references: [id], onDelete: Cascade)
+
+  @@map("treatments")
 }
